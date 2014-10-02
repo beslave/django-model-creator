@@ -1,5 +1,5 @@
 """
-Django settings for model_creator project.
+Django settings for model_creator-demo project.
 
 For more information on this file, see
 https://docs.djangoproject.com/en/1.7/topics/settings/
@@ -36,6 +36,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'model_creator',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -48,9 +50,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'model_creator.urls'
+ROOT_URLCONF = 'demo.urls'
 
-WSGI_APPLICATION = 'model_creator.wsgi.application'
+WSGI_APPLICATION = 'demo.wsgi.application'
 
 
 # Database

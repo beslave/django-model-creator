@@ -3,3 +3,5 @@
 *.pyc
 *.pyo
 *.mo
+
+db.sqlite3
