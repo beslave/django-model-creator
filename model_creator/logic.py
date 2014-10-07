@@ -1,8 +1,9 @@
 # coding: utf-8
+from django.contrib import admin
 from django.utils.importlib import import_module
 
 from . import errors
-from .models import DynamicModel
+from .models import DynamicModel, ModelTemplate
 
 
 def create_model(module, name, fields={}, meta={}):
@@ -49,7 +50,7 @@ def get_app_label(model_module_name='', model_meta={}):
     )
 
 
-def get_model(name, module='model_creator.models', fields={}, meta={}):
+def register_model(name, module='model_creator.models', fields={}, meta={}):
     model_module = import_module(module)
 
     if hasattr(model_module, name):
@@ -61,9 +62,23 @@ def get_model(name, module='model_creator.models', fields={}, meta={}):
                 )
             )
 
-        clear_model_cache(
-            get_app_label(model_module_name=model_module, model_meta=meta),
-            name
-        )
+        # clear_model_cache(
+        #     get_app_label(model_module_name=model_module, model_meta=meta),
+        #     name
+        # )
 
-    return create_model(model_module, name, fields=fields, meta=meta)
+    model = create_model(model_module, name, fields=fields, meta=meta)
+
+    admin.site.register(model)
+
+    return model
+
+
+def register_models_from_templates():
+    for model_template in ModelTemplate.objects.all():
+        register_model(
+            model_template.name,
+            'model_creator.models',
+            fields=model_template.get_prepared_fields(),
+            meta=model_template.get_model_meta()
+        )
