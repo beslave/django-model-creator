@@ -3,6 +3,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from . import settings as model_creator_settings
 from .field_types_registry import ModelFieldTypeRegistry as types_registry
 
 
@@ -10,6 +11,7 @@ def get_app_choices():
     return [
         (app_config.name, app_config.verbose_name)
         for app_config in apps.get_app_configs()
+        if app_config.name in model_creator_settings.DYNAMIC_APPS
     ]
 
 

@@ -3,13 +3,7 @@
 
 {% block object-tools-items %}
     <li>
-        <a href="#">{{ _('Import from xml') }}</a>
-    </li>
-    <li>
-        <a href="#">{{ _('Import from yaml') }}</a>
-    </li>
-    <li>
-        <a href="#">{{ _('Import from json') }}</a>
+        <a href="{% url 'model_creator:import_model_template' %}">{{ _('Import model template') }}</a>
     </li>
     <li>
         {% url cl.opts|admin_urlname:'add' as add_url %}

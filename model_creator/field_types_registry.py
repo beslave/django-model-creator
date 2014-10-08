@@ -32,6 +32,10 @@ class ModelFieldTypeRegistry(object):
     def get(cls, type_name):
         return cls.__registry__[type_name]
 
+    @classmethod
+    def get_all(cls):
+        return cls.__registry__.values()
+
     def get_field(self, **field_attrs):
         attrs = {}
         attrs.update(self.default_attributes)

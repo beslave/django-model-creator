@@ -14,10 +14,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ModelTemplate',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
                 ('app', models.CharField(max_length=128, verbose_name='application where model will be created')),
-                ('name', models.CharField(max_length=64, validators=[django.core.validators.RegexValidator('[a-zA-Z0-9]+', message='Name can contain only latin characters and numbers')], verbose_name='name for model')),
-                ('verbose_name', models.CharField(null=True, max_length=128, blank=True, verbose_name='verbose name (title) for model')),
+                ('name', models.CharField(max_length=64, verbose_name='name for model', validators=[django.core.validators.RegexValidator('[a-zA-Z0-9]+', message='Name can contain only latin characters and numbers')])),
+                ('verbose_name', models.CharField(max_length=128, verbose_name='verbose name (title) for model', blank=True, null=True)),
             ],
             options={
                 'verbose_name': 'template for dynamic model',
@@ -28,11 +28,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ModelTemplateField',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('field_type', models.CharField(max_length=16, choices=[('char', 'char type'), ('int', 'int type'), ('date', 'date type'), ('datetime', 'datetime type')])),
-                ('name', models.CharField(max_length=32, validators=[django.core.validators.RegexValidator('[0-9a-zA-Z_]+', message='Name can contain only latin letters, numbers and "_"')], verbose_name='name of field')),
-                ('verbose_name', models.CharField(max_length=64, default='', blank=True, verbose_name='verbose name of field')),
-                ('model_template', models.ForeignKey(to='model_creator.ModelTemplate', related_name='fields', verbose_name='model field')),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', auto_created=True, primary_key=True)),
+                ('field_type', models.CharField(max_length=16, choices=[('char', 'char'), ('int', 'int'), ('date', 'date'), ('datetime', 'datetime')])),
+                ('name', models.CharField(max_length=32, verbose_name='name of field', validators=[django.core.validators.RegexValidator('[0-9a-zA-Z_]+', message='Name can contain only latin letters, numbers and "_"')])),
+                ('verbose_name', models.CharField(max_length=64, verbose_name='verbose name of field', default='', blank=True)),
+                ('model_template', models.ForeignKey(verbose_name='model field', related_name='fields', to='model_creator.ModelTemplate')),
             ],
             options={
                 'verbose_name': 'Field for model template',

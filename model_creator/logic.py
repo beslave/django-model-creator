@@ -1,4 +1,5 @@
 # coding: utf-8
+from django.apps import apps
 from django.contrib import admin
 from django.utils.importlib import import_module
 
@@ -50,7 +51,23 @@ def get_app_label(model_module_name='', model_meta={}):
     )
 
 
-def register_model(name, module='model_creator.models', fields={}, meta={}):
+def clear_model_cache(app_name, model_name):
+    model = apps.all_models.get(app_name, {}).get(model_name)
+
+    if not model:
+        return
+
+    # Try unregister model from admin if it is already registered
+    try:
+        admin.site.unregister(model)
+    except admin.sites.NotRegistered:
+        pass
+
+    # Delete model from django apps registry
+    del apps.all_models[app_name][model_name]
+
+
+def register_model(name, module, fields={}, meta={}):
     model_module = import_module(module)
 
     if hasattr(model_module, name):
@@ -62,10 +79,13 @@ def register_model(name, module='model_creator.models', fields={}, meta={}):
                 )
             )
 
-        # clear_model_cache(
-        #     get_app_label(model_module_name=model_module, model_meta=meta),
-        #     name
-        # )
+        clear_model_cache(
+            get_app_label(
+                model_module_name=model_module.__name__,
+                model_meta=meta
+            ),
+            name
+        )
 
     model = create_model(model_module, name, fields=fields, meta=meta)
 
@@ -78,7 +98,7 @@ def register_models_from_templates():
     for model_template in ModelTemplate.objects.all():
         register_model(
             model_template.name,
-            'model_creator.models',
+            '{app}.models'.format(app=model_template.app),
             fields=model_template.get_prepared_fields(),
             meta=model_template.get_model_meta()
         )

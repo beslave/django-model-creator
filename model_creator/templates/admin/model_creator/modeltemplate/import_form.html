@@ -1,0 +1,34 @@
+{% extends 'admin/base.html' %}
+{% load i18n staticfiles %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/forms.css' %}" />
+
+<form method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
+    <fieldset class="module aligned">
+        <div class="form-row">
+            <label class="required" for="id_app">{{ _('Application for import') }}</label>
+            <select id="id_app" name="app">
+                {% for app, app_title in apps %}
+                    <option value="{{ app }}">{{ app_title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-row">
+            <label class="required" for="id_file_type">{{ _('file type') }}</label>
+            <select id="id_file_type" name="file_type">
+                {% for type in allowed_file_types %}
+                    <option value="{{ type }}">{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-row">
+            <label class="required" for="id_file">{{ _('file with models templates') }}</label>
+            <input type="file" name="file" id="id_file" />
+        </div>
+    </fieldset>
+    <div class="submit-row">
+        <input type="submit" class="default" value="{{ _('Import') }}" />
+    </div>
+</form>
+{% endblock %}
