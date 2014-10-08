@@ -52,6 +52,9 @@ def get_app_label(model_module_name='', model_meta={}):
 
 
 def clear_model_cache(app_name, model_name):
+    app_name = app_name.lower()
+    model_name = model_name.lower()
+
     model = apps.all_models.get(app_name, {}).get(model_name)
 
     if not model:
