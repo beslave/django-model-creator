@@ -1,6 +1,8 @@
 from django.apps import apps
 from django.core.validators import RegexValidator
 from django.db import models
+from django.db.models.signals import post_save, pre_delete
+from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 
 from . import settings as model_creator_settings
@@ -197,3 +199,29 @@ class ModelTemplateField(models.Model):
         ]
         verbose_name = _('Field for model template')
         verbose_name_plural = _('Fields for model templates')
+
+
+def get_model_template(sender, instance):
+    if sender == ModelTemplate:
+        return instance
+    return instance.model_template
+
+
+@receiver(post_save, sender=ModelTemplate)
+@receiver(post_save, sender=ModelTemplateField)
+@receiver(pre_delete, sender=ModelTemplateField)
+def on_template_update(sender, **kwargs):
+    from .logic import register_model_from_template, update_migrations
+
+    model_template = get_model_template(sender, kwargs.pop('instance'))
+    register_model_from_template(model_template)
+    update_migrations(model_template.app)
+
+
+@receiver(pre_delete, sender=ModelTemplate)
+def on_template_delete(sender, **kwargs):
+    from .logic import delete_model, update_migrations
+
+    model_template = kwargs.pop('instance')
+    delete_model(model_template.app, model_template.model_name, migrate=True)
+    update_migrations(model_template.app)

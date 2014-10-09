@@ -1,6 +1,8 @@
 # coding: utf-8
 from django.apps import apps
 from django.contrib import admin
+from django.core.management import call_command
+from django.db.utils import OperationalError
 from django.utils.importlib import import_module
 
 from . import errors
@@ -70,8 +72,24 @@ def clear_model_cache(app_name, model_name):
     del apps.all_models[app_name][model_name]
 
 
+def delete_model(app_label, model_name):
+    clear_model_cache(
+        app_label,
+        model_name
+    )
+
+
+def update_migrations(app_label):
+    call_command('makemigrations', app_label, noinput=True)
+    call_command('migrate', app_label, noinput=True)
+
+
 def register_model(name, module, fields={}, meta={}):
     model_module = import_module(module)
+    app_label = get_app_label(
+        model_module_name=model_module.__name__,
+        model_meta=meta
+    )
 
     if hasattr(model_module, name):
         if not issubclass(getattr(model_module, name), DynamicModel):
@@ -81,29 +99,27 @@ def register_model(name, module, fields={}, meta={}):
                     model=name
                 )
             )
-
-        clear_model_cache(
-            get_app_label(
-                model_module_name=model_module.__name__,
-                model_meta=meta
-            ),
-            name
-        )
-
-        delattr(model_module, name)
+        delete_model(app_label, name)
 
     model = create_model(model_module, name, fields=fields, meta=meta)
-
     admin.site.register(model)
 
     return model
 
 
+def register_model_from_template(model_template):
+    register_model(
+        model_template.name,
+        '{app}.models'.format(app=model_template.app),
+        fields=model_template.get_prepared_fields(),
+        meta=model_template.get_model_meta()
+    )
+
+
 def register_models_from_templates():
-    for model_template in ModelTemplate.objects.all():
-        register_model(
-            model_template.name,
-            '{app}.models'.format(app=model_template.app),
-            fields=model_template.get_prepared_fields(),
-            meta=model_template.get_model_meta()
-        )
+    try:
+        for model_template in ModelTemplate.objects.all():
+            register_model_from_template(model_template)
+    except OperationalError:
+        # Maybe db table for ModelTemplate is not create yet
+        pass
