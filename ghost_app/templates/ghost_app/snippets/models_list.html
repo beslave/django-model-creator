@@ -1,0 +1,9 @@
+<ul>
+    {% for model in models %}
+        <li>
+            <a href="{% url 'dynamic_model' model_name=model.model_name|lower %}">
+                {{ model.model_meta_options.verbose_name }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>

@@ -90,6 +90,8 @@ def register_model(name, module, fields={}, meta={}):
             name
         )
 
+        delattr(model_module, name)
+
     model = create_model(model_module, name, fields=fields, meta=meta)
 
     admin.site.register(model)

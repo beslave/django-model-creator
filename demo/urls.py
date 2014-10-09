@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
+import ghost_app.urls
 import model_creator.urls
 
 
@@ -11,4 +12,5 @@ urlpatterns = patterns(
         r'^model_creator/',
         include(model_creator.urls, namespace='model_creator')
     ),
+    url(r'^', include(ghost_app.urls))
 )

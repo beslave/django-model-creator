@@ -39,6 +39,7 @@ INSTALLED_APPS = (
 
     'model_creator',
 
+    'demo',
     'ghost_app',
 )
 
@@ -88,3 +89,7 @@ STATIC_URL = '/static/'
 
 
 MODEL_CREATOR_DYNAMIC_APPS = ['ghost_app']
+
+
+if DEBUG:
+    INSTALLED_APPS += ('debug_toolbar.apps.DebugToolbarConfig',)

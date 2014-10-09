@@ -15,6 +15,16 @@ def get_app_choices():
     ]
 
 
+class ObjectField(object):
+    """
+    Field of model object with it's value and template
+    """
+
+    def __init__(self, value, template):
+        self.value = value
+        self.template = template
+
+
 class DynamicModel(models.Model):
     """
     Base class of all dynamic-created models
@@ -22,6 +32,65 @@ class DynamicModel(models.Model):
 
     class Meta:
         abstract = True
+
+    @classmethod
+    def all_models(cls):
+        models_for_apps = {}
+
+        for model in apps.get_models():
+            if model._meta.abstract or not issubclass(model, cls):
+                continue
+
+            app_label = model._meta.app_label
+            models_for_apps.setdefault(app_label, [])
+            models_for_apps[app_label].append(model)
+
+        return models_for_apps
+
+    @classmethod
+    def get_model(cls, app_label, model_name):
+        models = cls.all_models().get(app_label, [])
+        models = [
+            x for x in models
+            if x.__name__.lower() == model_name.lower()
+        ]
+        return models[0] if models else None
+
+    @classmethod
+    def model_meta_options(cls):
+        return cls._meta
+
+    @classmethod
+    def model_name(cls):
+        return cls.__name__
+
+    @classmethod
+    def template(cls):
+        if '__model_template__' not in vars(cls):
+            app = cls._meta.app_label
+            name = cls.__name__
+            template = ModelTemplate.objects.get(app=app, name=name)
+            cls.__model_template__ = template
+        return cls.__model_template__
+
+    @classmethod
+    def template_fields(cls):
+        if '__model_template_fields__' not in vars(cls):
+            tpl = cls.template()
+            fields = list(tpl.fields.all())
+            cls.__model_template_fields__ = fields
+        return cls.__model_template_fields__
+
+    def object_fields(self):
+        if '__object_template_fields__' not in vars(self):
+            fields = [
+                ObjectField(
+                    getattr(self, field_template.name),
+                    field_template
+                ) for field_template in self.template_fields()
+            ]
+            self.__object_template_fields__ = fields
+        return self.__object_template_fields__
 
 
 class ModelTemplate(models.Model):
@@ -62,7 +131,9 @@ class ModelTemplate(models.Model):
         verbose_name_plural = _('templates for dynamic models')
 
     def __str__(self):
-        return (self.verbose_name or self.name).capitalize()
+        return 'Model template for "{}"'.format(
+            (self.verbose_name or self.name).capitalize()
+        )
 
     def get_model_meta(self):
         return {

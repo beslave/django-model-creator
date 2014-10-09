@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block head_css %}
+    <link rel="stylesheet" type="text/css" href="/static/ghost_app/style.css" media="all" />
+{% endblock %}
+
+{% block sidebar %}
+    {% include 'ghost_app/snippets/models_list.html' with models=models_list %}
+{% endblock %}
+
+{% block content %}
+{% if model %}
+    <table border=1>
+        <thead>
+        <tr>
+        {% for field in model.template_fields %}
+            <th>{{ field.name }}</th>
+        {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for object in model_objects %}
+            <tr>
+            {% for field in object.object_fields %}
+                <td>
+                {{ field.value }}
+                </td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}
