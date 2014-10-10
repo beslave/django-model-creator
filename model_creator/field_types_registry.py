@@ -21,7 +21,14 @@ class ModelFieldTypeRegistry(object):
     def __init__(self, name, model_field, title=None, **default_attributes):
         self.name = name
         self.model_field = model_field
-        self.default_attributes = default_attributes
+
+        self.default_attributes = {
+            'null': True,
+            'blank': True,
+            'default': None
+        }
+        self.default_attributes.update(default_attributes)
+
         self.title = title or self.name
 
     @classmethod

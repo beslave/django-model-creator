@@ -1,7 +1,11 @@
 # coding: utf-8
+from imp import reload
+
 from django.apps import apps
+from django.conf import settings
 from django.contrib import admin
 from django.core.management import call_command
+from django.core.urlresolvers import get_resolver
 from django.db.utils import OperationalError
 from django.utils.importlib import import_module
 
@@ -72,19 +76,32 @@ def clear_model_cache(app_name, model_name):
     del apps.all_models[app_name][model_name]
 
 
-def delete_model(app_label, model_name):
+def delete_model(app_label, model_name, migrate=False):
     clear_model_cache(
         app_label,
         model_name
     )
+
+    if migrate:
+        update_migrations(app_label)
 
 
 def update_migrations(app_label):
     call_command('makemigrations', app_label, noinput=True)
     call_command('migrate', app_label, noinput=True)
 
+def update_urls():
+    reload(import_module(settings.ROOT_URLCONF))
 
-def register_model(name, module, fields={}, meta={}):
+    # Clear resolver cache
+    resolver = get_resolver(settings.ROOT_URLCONF)
+    resolver._reverse_dict = {}
+    resolver._namespace_dict = {}
+    resolver._app_dict = {}
+    resolver._populated = False
+
+
+def register_model(name, module, fields={}, meta={}, migrate=False):
     model_module = import_module(module)
     app_label = get_app_label(
         model_module_name=model_module.__name__,
@@ -102,17 +119,23 @@ def register_model(name, module, fields={}, meta={}):
         delete_model(app_label, name)
 
     model = create_model(model_module, name, fields=fields, meta=meta)
+
+    if migrate:
+        update_migrations(app_label)
+
     admin.site.register(model)
+    update_urls()
 
     return model
 
 
-def register_model_from_template(model_template):
+def register_model_from_template(model_template, migrate=False):
     register_model(
         model_template.name,
         '{app}.models'.format(app=model_template.app),
         fields=model_template.get_prepared_fields(),
-        meta=model_template.get_model_meta()
+        meta=model_template.get_model_meta(),
+        migrate=migrate
     )
 
 

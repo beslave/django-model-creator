@@ -91,5 +91,10 @@ STATIC_URL = '/static/'
 MODEL_CREATOR_DYNAMIC_APPS = ['ghost_app']
 
 
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+
 if DEBUG:
     INSTALLED_APPS += ('debug_toolbar.apps.DebugToolbarConfig',)
+    MIDDLEWARE_CLASSES = (
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+    ) + MIDDLEWARE_CLASSES

@@ -211,17 +211,15 @@ def get_model_template(sender, instance):
 @receiver(post_save, sender=ModelTemplateField)
 @receiver(pre_delete, sender=ModelTemplateField)
 def on_template_update(sender, **kwargs):
-    from .logic import register_model_from_template, update_migrations
+    from .logic import register_model_from_template
 
     model_template = get_model_template(sender, kwargs.pop('instance'))
-    register_model_from_template(model_template)
-    update_migrations(model_template.app)
+    register_model_from_template(model_template, migrate=True)
 
 
 @receiver(pre_delete, sender=ModelTemplate)
 def on_template_delete(sender, **kwargs):
-    from .logic import delete_model, update_migrations
+    from .logic import delete_model
 
     model_template = kwargs.pop('instance')
     delete_model(model_template.app, model_template.model_name, migrate=True)
-    update_migrations(model_template.app)
