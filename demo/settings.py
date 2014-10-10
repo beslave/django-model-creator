@@ -91,6 +91,12 @@ STATIC_URL = '/static/'
 MODEL_CREATOR_DYNAMIC_APPS = ['ghost_app']
 
 
+try:
+    from settings_local import *
+except ImportError:
+    pass
+
+
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
 if DEBUG:

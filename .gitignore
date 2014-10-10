@@ -7,4 +7,6 @@
 __pycache__
 db.sqlite3
 
+settings_local.py
+
 ghost_app/migrations
