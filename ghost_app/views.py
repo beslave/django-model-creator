@@ -24,22 +24,25 @@ class DynamicModelView(View):
             self.model_name
         )
 
-        form_class = self.model.get_model_form()
+        self.form = None
 
-        if request.method == 'POST':
-            data = {
-                field.name: request.POST.get(field.name)
-                for field in self.model.get_template_fields()
-            }
-            self.form = form_class(data=data)
-            if self.form.is_valid():
-                self.form.save()
-                return redirect(
-                    'dynamic_model',
-                    model_name=self.model_name
-                )
-        else:
-            self.form = form_class()
+        if self.model:
+            form_class = self.model.get_model_form()
+
+            if request.method == 'POST':
+                data = {
+                    field.name: request.POST.get(field.name)
+                    for field in self.model.get_template_fields()
+                }
+                self.form = form_class(data=data)
+                if self.form.is_valid():
+                    self.form.save()
+                    return redirect(
+                        'dynamic_model',
+                        model_name=self.model_name
+                    )
+            else:
+                self.form = form_class()
 
         return render(
             request, self.template_name,
