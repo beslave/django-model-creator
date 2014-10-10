@@ -87,8 +87,9 @@ def delete_model(app_label, model_name, migrate=False):
 
 
 def update_migrations(app_label):
-    call_command('makemigrations', app_label, noinput=True)
-    call_command('migrate', app_label, noinput=True)
+    call_command('makemigrations', app_label)
+    call_command('migrate', app_label, interactive=False)
+
 
 def update_urls():
     reload(import_module(settings.ROOT_URLCONF))
@@ -140,9 +141,14 @@ def register_model_from_template(model_template, migrate=False):
 
 
 def register_models_from_templates():
+    apps = set()
     try:
         for model_template in ModelTemplate.objects.all():
             register_model_from_template(model_template)
+            apps.add(model_template.app)
     except OperationalError:
         # Maybe db table for ModelTemplate is not create yet
         pass
+
+    for app in apps:
+        update_migrations(app)

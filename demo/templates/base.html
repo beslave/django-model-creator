@@ -2,8 +2,13 @@
 <html>
     <head>
         <title>Model Creator Demo</title>
-        {% block head_css %}{% endblock %}
-        {% block head_js %}{% endblock %}
+        {% block head_css %}
+            <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css">
+        {% endblock %}
+        {% block head_js %}
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+            <script src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
+        {% endblock %}
     </head>
     <body>
         <div class="b-sidebar">

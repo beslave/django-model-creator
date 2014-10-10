@@ -5,3 +5,17 @@
     bottom: 0;
     margin-right: 20px;
 }
+
+.b-object-field {
+    position: relative;
+}
+
+.b-object-field-input {
+    position: absolute;
+    z-index: 1;
+    margin: 0;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}

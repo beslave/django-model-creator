@@ -1,0 +1,16 @@
+{% load i18n %}
+
+<form method="POST" actin="" class="b-form">{% csrf_token %}
+    {{ form.fields.date.errors }}
+    {% for field in model.get_template_fields %}
+        <div class="b-form-field">
+            <label for="id_{{ field.name }}">{{ field.get_verbose_name }}:</label>
+            <input type="text" id="id_{{ field.name }}" name="{{ field.name }}" value=""
+                   class="b-typed_input__{{ field.field_type }} js-input"
+                   data-type="{{ field.field_type }}" />
+        </div>
+    {% endfor %}
+    <div class="b-form-submit">
+        <input type="submit" value="{{ _('Create') }}" />
+    </div>
+</form>

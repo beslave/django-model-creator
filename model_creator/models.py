@@ -3,6 +3,7 @@ from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from . import settings as model_creator_settings
@@ -67,7 +68,17 @@ class DynamicModel(models.Model):
         return cls.__name__
 
     @classmethod
-    def template(cls):
+    def get_model_form(cls):
+        class Meta:
+            model = cls
+
+        return type(
+            '{model}Form'.format(model=cls.__name__),
+            (ModelForm,), {'Meta': Meta}
+        )
+
+    @classmethod
+    def get_template(cls):
         if '__model_template__' not in vars(cls):
             app = cls._meta.app_label
             name = cls.__name__
@@ -76,9 +87,9 @@ class DynamicModel(models.Model):
         return cls.__model_template__
 
     @classmethod
-    def template_fields(cls):
+    def get_template_fields(cls):
         if '__model_template_fields__' not in vars(cls):
-            tpl = cls.template()
+            tpl = cls.get_template()
             fields = list(tpl.fields.all())
             cls.__model_template_fields__ = fields
         return cls.__model_template_fields__
@@ -89,7 +100,7 @@ class DynamicModel(models.Model):
                 ObjectField(
                     getattr(self, field_template.name),
                     field_template
-                ) for field_template in self.template_fields()
+                ) for field_template in self.get_template_fields()
             ]
             self.__object_template_fields__ = fields
         return self.__object_template_fields__
@@ -151,6 +162,12 @@ class ModelTemplate(models.Model):
             fields[field.name] = model_field
         return fields
 
+    def get_verbose_name(self):
+        return self.verbose_name or self.name
+
+    def get_model(self):
+        return DynamicModel.get_model(self.app, self.name)
+
 
 class ModelTemplateField(models.Model):
     """
@@ -200,6 +217,12 @@ class ModelTemplateField(models.Model):
         verbose_name = _('Field for model template')
         verbose_name_plural = _('Fields for model templates')
 
+    def get_field_type(self):
+        return types_registry.get(self.field_type)
+
+    def get_verbose_name(self):
+        return self.verbose_name or self.name
+
 
 def get_model_template(sender, instance):
     if sender == ModelTemplate:
@@ -222,4 +245,7 @@ def on_template_delete(sender, **kwargs):
     from .logic import delete_model
 
     model_template = kwargs.pop('instance')
-    delete_model(model_template.app, model_template.model_name, migrate=True)
+    model = model_template.get_model()
+    if model:
+        model.objects.all().delete()
+    delete_model(model_template.app, model_template.name, migrate=True)

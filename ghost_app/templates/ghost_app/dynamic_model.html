@@ -1,7 +1,14 @@
 {% extends 'base.html' %}
+{% load staticfiles i18n %}
 
 {% block head_css %}
-    <link rel="stylesheet" type="text/css" href="/static/ghost_app/style.css" media="all" />
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'ghost_app/style.css' %}" media="all" />
+{% endblock %}
+
+{% block head_js %}
+    {{ block.super }}
+    <script src="{% static 'ghost_app/ghost_app.js' %}"></script>
 {% endblock %}
 
 {% block sidebar %}
@@ -13,21 +20,46 @@
     <table border=1>
         <thead>
         <tr>
-        {% for field in model.template_fields %}
-            <th>{{ field.name }}</th>
-        {% endfor %}
+            {% for field in model.get_template_fields %}
+            <th>
+                {{ field.get_verbose_name }}
+            </th>
+            {% endfor %}
+            <th>{{ _('Actions') }}</th>
         </tr>
         </thead>
         <tbody>
-        {% for object in model_objects %}
+            {% for object in model_objects %}
             <tr>
-            {% for field in object.object_fields %}
-                <td>
-                {{ field.value }}
+                {% for field in object.object_fields %}
+                <td class="b-object-field js-object-field"
+                    data-field="{{ field.template.name }}"
+                    data-type="{{ field.template.field_type }}"
+                    data-model="{{ model_name }}"
+                    data-objectPk="{{ object.pk }}"
+                    width=200
+                >
+                    {% if field.template.field_type == 'date' %}
+                        {{ field.value|date:"c" }}
+                    {% elif field.template.field_type == 'datetime' %}
+                        {{ field.value|date:"Y-m-d H:i:s" }}
+                    {% else %}
+                        {{ field.value }}
+                    {% endif %}
                 </td>
-            {% endfor %}
+                {% endfor %}
+                <td>
+                    <a href="{% url 'delete_dynamic_model_object' model=model_name object_id=object.pk %}">
+                        {{ _('Delete') }}
+                    </a>
+                </td>
             </tr>
-        {% endfor %}
+            {% endfor %}
+            <tr>
+                <td colspan="{{ model.get_template_fields | length | add:1 }}">
+                    {% include 'ghost_app/snippets/add_model_object_form.html' with model_form=add_form %}
+                </td>
+            </tr>
         </tbody>
     </table>
 {% endif %}
